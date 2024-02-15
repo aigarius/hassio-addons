@@ -1,20 +1,30 @@
-name: 🤖 Enable auto merge
-
+# yamllint disable rule:line-length
+# shellcheck disable=SC2043
+---
+name: automerge
 on:
-  pull_request_target:
-    branches: [release]
-    # We're using labeled here because we don't want to enable auto merge for every PR against release.
-    # Just the ones created by the cherry pick action.
-    types: [labeled]
-
+  pull_request:
+    types:
+      - labeled
+      - synchronize
+      - opened
+      - edited
+      - ready_for_review
+      - reopened
+      - unlocked
+  pull_request_review:
+    types:
+      - submitted
+  check_suite:
+    types:
+      - completed
+  status: {}
 jobs:
-  enable-auto-merge:
-    name: 🤖 Auto merge release PR
+  automerge:
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.labels.*.name, 'auto-merge')
     steps:
-      - name: Enable auto-merge
-        uses: reitermarkus/automerge@v2.1.2
-        with:
-          token: ${{ secrets.Auto_Merge }}
-          merge-method: squash
+      - id: automerge
+        name: automerge
+        uses: "pascalgn/automerge-action@v0.16.2"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
